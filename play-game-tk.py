@@ -13,7 +13,7 @@ def tk_test():
     buttons = {}
     for i in range(5):
         for j in range(5):
-            btn = tk.Button(buttonframe, text="⬜️", font=('Arial', 18), height=2, width=2, command=lambda i=i, j=j: onClick(buttons, i, j))
+            btn = tk.Button(buttonframe, text="", font=('Arial', 18), height=2, width=2, command=lambda i=i, j=j: onClick(buttons, i, j))
             btn.grid(row=i, column=j, sticky=tk.W+tk.E)
             buttons[(i, j)] = btn
 
