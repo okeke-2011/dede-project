@@ -10,16 +10,20 @@ def tk_test():
     for i in range(5):
         buttonframe.columnconfigure(i, weight=1)
 
+    buttons = {}
     for i in range(5):
         for j in range(5):
-            num = 5 * i + j + 1
-            btn = tk.Button(buttonframe, text="⬜️", font=('Arial', 18), height=2, width=2)
+            btn = tk.Button(buttonframe, text="⬜️", font=('Arial', 18), height=2, width=2, command=lambda i=i, j=j: onClick(buttons, i, j))
             btn.grid(row=i, column=j, sticky=tk.W+tk.E)
+            buttons[(i, j)] = btn
 
-    buttonframe.pack(padx=20, pady=100)
-
+    buttonframe.pack(padx=20, pady=80)
 
     root.mainloop()
+
+def onClick(buttons, i, j):
+    btn = buttons[(i, j)]
+    btn.config(text="🟩")
 
 if __name__ == "__main__":
     tk_test()
