@@ -9,11 +9,25 @@ class GamePlay():
     self.red = red
     self.board = [["" for i in range(self.n)] for i in range(self.n)]
     self.curr_player = "X"
+    self.ai = "O"
     self.winner = "-"
+    self.single_player = True
 
     root = tk.Tk()
-    root.geometry("650x650")
+    root.geometry("650x750")
     root.title("Engraved Plain")
+
+    player_selection_frame = tk.Frame(root)
+    player_selection_frame.columnconfigure(0, weight=1)
+    player_selection_frame.columnconfigure(1, weight=1)
+
+    single = Button(player_selection_frame, text="Single", font=('Arial', 16), height=50, width=100, command=self.single)
+    single.grid(row=0, column=0, sticky=tk.W+tk.E)
+
+    dual = Button(player_selection_frame, text="Double", font=('Arial', 16), height=50, width=100, command=self.dual)
+    dual.grid(row=0, column=1, sticky=tk.W+tk.E)
+
+    player_selection_frame.pack(pady=30)
 
     buttonframe = tk.Frame(root)
     for i in range(5):
@@ -32,10 +46,10 @@ class GamePlay():
             btn.grid(row=i, column=j, sticky=tk.W+tk.E)
             self.buttons[(i, j)] = btn
     
-    buttonframe.pack(padx=20, pady=80)
+    buttonframe.pack(padx=20, pady=10)
 
     reset_button = Button(root, text="Reset", font=('Arial', 30), height=60, width=120, command=self.reset)
-    reset_button.pack()
+    reset_button.pack(pady=50)
     
     for x, y in self.green:
       self.board[x][y] = "x"
@@ -47,6 +61,12 @@ class GamePlay():
 
     root.mainloop()
 
+  def single(self):
+    self.single_player = True
+
+  def dual(self):
+    self.single_player = False
+
   def reset(self):
     self.board = [["" for i in range(self.n)] for i in range(self.n)]
     self.curr_player = "X"
@@ -57,6 +77,11 @@ class GamePlay():
         btn = self.buttons[(x, y)]
         btn.config(bg="white", text="")
 
+    n = 3
+    spots = np.random.choice(range(1, 26), n*2, replace=False)
+    g, r = spots[:n], spots[n:]
+    self.green, self.red = [self.to_pos(num) for num in g], [to_pos(num) for num in r]
+
     for x, y in self.green:
       self.board[x][y] = "x"
       self.buttons[(x, y)].config(bg="#c1ffa7")
@@ -65,6 +90,30 @@ class GamePlay():
       self.board[x][y] = "o"
       self.buttons[(x, y)].config(bg="#ff9580")
   
+  def ai_play(self):
+    # ...ai thinks
+    num = np.random.choice(range(1, 26))
+    x, y = self.to_pos(num)
+    while not self.validate_move(x, y):
+      num = np.random.choice(range(1, 26))
+      x, y = self.to_pos(num)
+
+    btn = self.buttons[(x, y)]
+    if self.ai == "X":
+      self.board[x][y] = "X"
+      btn.config(text ="❎", bg="#c1ffa7")
+    
+    if self.ai == "O":
+      self.board[x][y] = "O"
+      btn.config(text = "🅾️", bg="#ff9580")
+
+    self.winner, positions = self.check_win()
+    if self.winner == self.ai:
+      for i, j in positions:
+        btn = self.buttons[(i, j)]
+        btn.config(text ="🏆", bg="gold")
+
+
   def play(self, x, y):
     if self.winner == "X" or self.winner == "O":
       self.reset()
@@ -89,10 +138,13 @@ class GamePlay():
         btn = self.buttons[(i, j)]
         btn.config(text ="🏆", bg="gold")
     else:
-      if self.curr_player == "X":
-        self.curr_player = "O"
-      elif self.curr_player == "O":
-        self.curr_player = "X"
+      if self.single_player:
+        self.ai_play()
+      else:
+        if self.curr_player == "X":
+          self.curr_player = "O"
+        elif self.curr_player == "O":
+          self.curr_player = "X"
 
   def validate_move(self, x, y):
     if self.board[x][y] == "":
@@ -124,12 +176,16 @@ class GamePlay():
 
     return "-", []
   
+  def to_pos(self, num):
+    return (num-1) // 5, (num-1) % 5
+  
 def to_pos(num):
   return (num-1) // 5, (num-1) % 5
 
 if __name__ == "__main__":
-  spots = np.random.choice(range(1, 26), 10)
-  g, r = spots[:5], spots[5:]
+  n = 3
+  spots = np.random.choice(range(1, 26), n*2, replace=False)
+  g, r = spots[:n], spots[n:]
   # g, r = [4, 7, 22, 1, 13], [10, 16, 19, 12, 25]
   green, red = [to_pos(num) for num in g], [to_pos(num) for num in r]
   game = GamePlay(5, green, red)
