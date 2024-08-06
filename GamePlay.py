@@ -1,79 +1,135 @@
+import tkinter as tk
+from tkmacosx import Button
+import numpy as np
+
 class GamePlay():
   def __init__(self, n, green, red):
     self.n = n
     self.green = green
     self.red = red
-    self.board = [["⬜️" for i in range(self.n)] for i in range(self.n)]
+    self.board = [["" for i in range(self.n)] for i in range(self.n)]
+    self.curr_player = "X"
+    self.winner = "-"
+
+    root = tk.Tk()
+    root.geometry("650x650")
+    root.title("Engraved Plain")
+
+    buttonframe = tk.Frame(root)
+    for i in range(5):
+        buttonframe.columnconfigure(i, weight=1)
+
+    self.buttons = {}
+    for i in range(5):
+        for j in range(5):
+            btn = Button(
+              buttonframe, 
+              text="", 
+              font=('Arial', 30), 
+              height=80, 
+              width=80, 
+              command=lambda x=i, y=j: self.play(x, y))
+            btn.grid(row=i, column=j, sticky=tk.W+tk.E)
+            self.buttons[(i, j)] = btn
+    
+    buttonframe.pack(padx=20, pady=80)
+
+    reset_button = Button(root, text="Reset", font=('Arial', 30), height=60, width=120, command=self.reset)
+    reset_button.pack()
     
     for x, y in self.green:
-      self.board[x][y] = "🟩"
+      self.board[x][y] = "x"
+      self.buttons[(x, y)].config(bg="#c1ffa7")
 
     for x, y in self.red:
-      self.board[x][y] = "🟥"
+      self.board[x][y] = "o"
+      self.buttons[(x, y)].config(bg="#ff9580")
 
-  def __str__(self):
-    template = [[" 1", " 2", " 3", " 4", " 5"],
-                [" 6", " 7", " 8", " 9", "10"],
-                ["11", "12", "13", "14", "15"],
-                ["16", "17", "18", "19", "20"],
-                ["21", "22", "23", "24", "25"]]
+    root.mainloop()
 
-    result = "\n"
-    for i in range(len(self.board)):
-      for tile in self.board[i]:
-        result += f"{tile}   "
+  def reset(self):
+    self.board = [["" for i in range(self.n)] for i in range(self.n)]
+    self.curr_player = "X"
+    self.winner = "-"
 
-      result += "      "
+    for x in range(5):
+      for y in range(5):
+        btn = self.buttons[(x, y)]
+        btn.config(bg="white", text="")
 
-      for num in template[i]:
-        result += f"{num}   "
+    for x, y in self.green:
+      self.board[x][y] = "x"
+      self.buttons[(x, y)].config(bg="#c1ffa7")
 
-      result += "\n\n"
+    for x, y in self.red:
+      self.board[x][y] = "o"
+      self.buttons[(x, y)].config(bg="#ff9580")
+  
+  def play(self, x, y):
+    if self.winner == "X" or self.winner == "O":
+      self.reset()
+      return
 
-    return result
+    if not self.validate_move(x, y):
+      # show error
+      return
 
-  def covert_num_to_pos(self, num):
-    x = (num-1) // self.n
-    y = (num-1) % self.n
+    btn = self.buttons[(x, y)]
+    if self.curr_player == "X":
+      self.board[x][y] = "X"
+      btn.config(text ="❎", bg="#c1ffa7")
+    
+    if self.curr_player == "O":
+      self.board[x][y] = "O"
+      btn.config(text = "🅾️", bg="#ff9580")
 
-    return x, y
+    self.winner, positions = self.check_win()
+    if self.winner == self.curr_player:
+      for i, j in positions:
+        btn = self.buttons[(i, j)]
+        btn.config(text ="🏆", bg="gold")
+    else:
+      if self.curr_player == "X":
+        self.curr_player = "O"
+      elif self.curr_player == "O":
+        self.curr_player = "X"
 
-  def play(self, player, pos):
-    x, y = self.covert_num_to_pos(pos)
-
-    if player == "X":
-      self.board[x][y] = "❎"
-    elif player == "O":
-      self.board[x][y] = "🅾️"
-
-  def validate_move(self, player, pos):
-    x, y = self.covert_num_to_pos(pos)
-
-    if self.board[x][y] == "⬜️":
+  def validate_move(self, x, y):
+    if self.board[x][y] == "":
       return True
 
-    if player == "X" and self.board[x][y] == "🟩":
+    if self.curr_player == "X" and self.board[x][y] == "x":
       return True
 
-    if player == "O" and self.board[x][y] == "🟥":
+    if self.curr_player == "O" and self.board[x][y] == "o":
       return True
 
     return False
 
   def check_win(self):
-    for row in self.board:
-      for i in range(self.n - 3 + 1):
-        if row[i:i+3] == ["❎"] * 3:
-          return "X"
-        elif row[i:i+3] == ["🅾️"] * 3:
-          return "O"
+    for i in range(len(self.board)):
+      for j in range(self.n - 3 + 1):
+        if self.board[i][j:j+3] == ["X"] * 3:
+          return "X", [(i, j), (i, j + 1), (i, j + 2)]
+        elif self.board[i][j:j+3] == ["O"] * 3:
+          return "O", [(i, j), (i, j + 1), (i, j + 2)]
 
     for j in range(self.n):
       for i in range(self.n - 3 + 1):
         col = [self.board[i+x][j] for x in range(3)]
-        if col == ["❎"] * 3:
-          return "X"
-        elif col == ["🅾️"] * 3:
-          return "O"
+        if col == ["X"] * 3:
+          return "X", [(i, j), (i + 1, j), (i + 2, j)]
+        elif col == ["O"] * 3:
+          return "O", [(i, j), (i + 1, j), (i + 2, j)]
 
-    return "-"
+    return "-", []
+  
+def to_pos(num):
+  return (num-1) // 5, (num-1) % 5
+
+if __name__ == "__main__":
+  spots = np.random.choice(range(1, 26), 10)
+  g, r = spots[:5], spots[5:]
+  # g, r = [4, 7, 22, 1, 13], [10, 16, 19, 12, 25]
+  green, red = [to_pos(num) for num in g], [to_pos(num) for num in r]
+  game = GamePlay(5, green, red)

@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkmacosx import Button
 
 def tk_test():
     root = tk.Tk()
@@ -13,7 +14,7 @@ def tk_test():
     buttons = {}
     for i in range(5):
         for j in range(5):
-            btn = tk.Button(buttonframe, text="", font=('Arial', 18), height=2, width=2, command=lambda i=i, j=j: onClick(buttons, i, j))
+            btn = Button(buttonframe, text="", font=('Arial', 18), height=60, width=60, command=lambda i=i, j=j: onClick(buttons, i, j))
             btn.grid(row=i, column=j, sticky=tk.W+tk.E)
             buttons[(i, j)] = btn
 
@@ -24,6 +25,10 @@ def tk_test():
 def onClick(buttons, i, j):
     btn = buttons[(i, j)]
     btn.config(text="🟩")
+    btn.config(bg="#c1ffa7")
+
+# #c1ffa7 - green
+# #ff9580 - red
 
 if __name__ == "__main__":
     tk_test()
