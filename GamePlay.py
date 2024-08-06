@@ -21,11 +21,11 @@ class GamePlay():
     player_selection_frame.columnconfigure(0, weight=1)
     player_selection_frame.columnconfigure(1, weight=1)
 
-    single = Button(player_selection_frame, text="Single", font=('Arial', 16), height=50, width=100, command=self.single)
-    single.grid(row=0, column=0, sticky=tk.W+tk.E)
+    self.single_button = Button(player_selection_frame, text="Single", font=('Arial', 16), bg="cyan", height=50, width=100, command=self.single)
+    self.single_button.grid(row=0, column=0, sticky=tk.W+tk.E)
 
-    dual = Button(player_selection_frame, text="Double", font=('Arial', 16), height=50, width=100, command=self.dual)
-    dual.grid(row=0, column=1, sticky=tk.W+tk.E)
+    self.dual_button = Button(player_selection_frame, text="Double", font=('Arial', 16), height=50, width=100, command=self.dual)
+    self.dual_button.grid(row=0, column=1, sticky=tk.W+tk.E)
 
     player_selection_frame.pack(pady=30)
 
@@ -63,9 +63,13 @@ class GamePlay():
 
   def single(self):
     self.single_player = True
+    self.single_button.config(bg="cyan")
+    self.dual_button.config(bg="white")
 
   def dual(self):
     self.single_player = False
+    self.single_button.config(bg="white")
+    self.dual_button.config(bg="cyan")
 
   def reset(self):
     self.board = [["" for i in range(self.n)] for i in range(self.n)]
@@ -120,7 +124,6 @@ class GamePlay():
       return
 
     if not self.validate_move(x, y):
-      # show error
       return
 
     btn = self.buttons[(x, y)]
