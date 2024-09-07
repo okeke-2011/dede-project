@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkmacosx import Button
 import numpy as np
+from minimax import alpha_beta_search, eval_func
 
 class GamePlay():
   def __init__(self, n, green, red):
@@ -8,8 +9,8 @@ class GamePlay():
     self.green = green
     self.red = red
     self.board = [["" for i in range(self.n)] for i in range(self.n)]
-    self.curr_player = "X"
-    self.ai = "O"
+    self.curr_player = "O"
+    self.ai = "X"
     self.winner = "-"
     self.single_player = True
 
@@ -50,14 +51,16 @@ class GamePlay():
 
     reset_button = Button(root, text="Reset", font=('Arial', 30), height=60, width=120, command=self.reset)
     reset_button.pack(pady=50)
-    
-    for x, y in self.green:
-      self.board[x][y] = "x"
-      self.buttons[(x, y)].config(bg="#c1ffa7")
 
-    for x, y in self.red:
-      self.board[x][y] = "o"
-      self.buttons[(x, y)].config(bg="#ff9580")
+    self.reset()
+    
+    # for x, y in self.green:
+    #   self.board[x][y] = "x"
+    #   self.buttons[(x, y)].config(bg="#c1ffa7")
+
+    # for x, y in self.red:
+    #   self.board[x][y] = "o"
+    #   self.buttons[(x, y)].config(bg="#ff9580")
 
     root.mainloop()
 
@@ -73,7 +76,7 @@ class GamePlay():
 
   def reset(self):
     self.board = [["" for i in range(self.n)] for i in range(self.n)]
-    self.curr_player = "X"
+    self.curr_player = "O"
     self.winner = "-"
 
     for x in range(5):
@@ -93,15 +96,23 @@ class GamePlay():
     for x, y in self.red:
       self.board[x][y] = "o"
       self.buttons[(x, y)].config(bg="#ff9580")
+
+    if self.single_player:
+      self.ai_play()
   
   def ai_play(self):
     # ...ai thinks
-    num = np.random.choice(range(1, 26))
-    x, y = self.to_pos(num)
-    while not self.validate_move(x, y):
-      num = np.random.choice(range(1, 26))
-      x, y = self.to_pos(num)
+    # num = np.random.choice(range(1, 26))
+    # x, y = self.to_pos(num)
+    # while not self.validate_move(x, y):
+    #   num = np.random.choice(range(1, 26))
+    #   x, y = self.to_pos(num)
 
+    eval, move = alpha_beta_search(self.board, self.ai)
+    print("\n\nAI eval score:", eval)
+  
+    x, y = move
+  
     btn = self.buttons[(x, y)]
     if self.ai == "X":
       self.board[x][y] = "X"
@@ -110,6 +121,9 @@ class GamePlay():
     if self.ai == "O":
       self.board[x][y] = "O"
       btn.config(text = "🅾️", bg="#ff9580")
+
+    # board_score = eval_func(self.board, self.ai) - eval_func(self.board, self.curr_player)
+    # print("Actual calculated score:", board_score)
 
     self.winner, positions = self.check_win()
     if self.winner == self.ai:
@@ -163,19 +177,19 @@ class GamePlay():
 
   def check_win(self):
     for i in range(len(self.board)):
-      for j in range(self.n - 3 + 1):
-        if self.board[i][j:j+3] == ["X"] * 3:
-          return "X", [(i, j), (i, j + 1), (i, j + 2)]
-        elif self.board[i][j:j+3] == ["O"] * 3:
-          return "O", [(i, j), (i, j + 1), (i, j + 2)]
+      for j in range(self.n - 4 + 1):
+        if self.board[i][j:j+4] == ["X"] * 4:
+          return "X", [(i, j), (i, j + 1), (i, j + 2), (i, j + 3)]
+        elif self.board[i][j:j+4] == ["O"] * 4:
+          return "O", [(i, j), (i, j + 1), (i, j + 2), (i, j + 3)]
 
     for j in range(self.n):
-      for i in range(self.n - 3 + 1):
-        col = [self.board[i+x][j] for x in range(3)]
-        if col == ["X"] * 3:
-          return "X", [(i, j), (i + 1, j), (i + 2, j)]
-        elif col == ["O"] * 3:
-          return "O", [(i, j), (i + 1, j), (i + 2, j)]
+      for i in range(self.n - 4 + 1):
+        col = [self.board[i+x][j] for x in range(4)]
+        if col == ["X"] * 4:
+          return "X", [(i, j), (i + 1, j), (i + 2, j), (i + 3, j)]
+        elif col == ["O"] * 4:
+          return "O", [(i, j), (i + 1, j), (i + 2, j), (i + 3, j)]
 
     return "-", []
   
