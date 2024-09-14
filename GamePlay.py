@@ -22,10 +22,12 @@ class GamePlay():
     player_selection_frame.columnconfigure(0, weight=1)
     player_selection_frame.columnconfigure(1, weight=1)
 
-    self.single_button = Button(player_selection_frame, text="Single", font=('Arial', 16), bg="cyan", height=50, width=100, command=self.single)
+    self.single_button = Button(player_selection_frame, text="Single", font=('Arial', 16), 
+                                bg="#E4F6F8", height=50, width=100, command=self.single)
     self.single_button.grid(row=0, column=0, sticky=tk.W+tk.E)
 
-    self.dual_button = Button(player_selection_frame, text="Double", font=('Arial', 16), height=50, width=100, command=self.dual)
+    self.dual_button = Button(player_selection_frame, text="Double", font=('Arial', 16), 
+                              height=50, width=100, command=self.dual)
     self.dual_button.grid(row=0, column=1, sticky=tk.W+tk.E)
 
     player_selection_frame.pack(pady=30)
@@ -66,18 +68,23 @@ class GamePlay():
 
   def single(self):
     self.single_player = True
-    self.single_button.config(bg="cyan")
+    self.single_button.config(bg="#E4F6F8")
     self.dual_button.config(bg="white")
+    self.reset()
 
   def dual(self):
     self.single_player = False
     self.single_button.config(bg="white")
-    self.dual_button.config(bg="cyan")
+    self.dual_button.config(bg="#E4F6F8")
+    self.reset()
 
   def reset(self):
     self.board = [["" for i in range(self.n)] for i in range(self.n)]
-    self.curr_player = "O"
     self.winner = "-"
+    if self.single_player:
+      self.curr_player = "O"
+    else:
+      self.curr_player = "X"
 
     for x in range(5):
       for y in range(5):
@@ -101,17 +108,17 @@ class GamePlay():
       self.ai_play()
   
   def ai_play(self):
-    # ...ai thinks
-    # num = np.random.choice(range(1, 26))
-    # x, y = self.to_pos(num)
-    # while not self.validate_move(x, y):
-    #   num = np.random.choice(range(1, 26))
-    #   x, y = self.to_pos(num)
-
     eval, move = alpha_beta_search(self.board, self.ai)
     print("\n\nAI eval score:", eval)
-  
-    x, y = move
+
+    if move:
+      x, y = move
+    else:
+      num = np.random.choice(range(1, 26))
+      x, y = self.to_pos(num)
+      while not self.validate_move(x, y):
+        num = np.random.choice(range(1, 26))
+        x, y = self.to_pos(num)
   
     btn = self.buttons[(x, y)]
     if self.ai == "X":
@@ -174,6 +181,35 @@ class GamePlay():
       return True
 
     return False
+  
+  def get_diags(self):
+    all_diags = []
+    all_diags_pos = []
+    dir_1_s = [(3, 0), (4, 0), (3, 1), (4, 1)]
+    for i, j in dir_1_s:
+      diag = []
+      diag_pos = []
+      for _ in range(4):
+        diag.append(self.board[i][j])
+        diag_pos.append((i, j))
+        i -= 1
+        j += 1
+      all_diags.append(diag)
+      all_diags_pos.append(diag_pos)
+        
+    dir_2_s = [(0, 0), (0, 1), (1, 0), (1, 1)]
+    for i, j in dir_2_s:
+      diag = []
+      diag_pos = []
+      for _ in range(4):
+        diag.append(self.board[i][j])
+        diag_pos.append((i, j))
+        i += 1
+        j += 1
+      all_diags.append(diag)
+      all_diags_pos.append(diag_pos)
+    
+    return all_diags, all_diags_pos
 
   def check_win(self):
     for i in range(len(self.board)):
@@ -190,6 +226,13 @@ class GamePlay():
           return "X", [(i, j), (i + 1, j), (i + 2, j), (i + 3, j)]
         elif col == ["O"] * 4:
           return "O", [(i, j), (i + 1, j), (i + 2, j), (i + 3, j)]
+        
+    diags, diags_pos = self.get_diags();
+    for i in range(len(diags)):
+      if diags[i] == ["X"] * 4:
+        return "X", diags_pos[i]
+      elif diags[i] == ["O"] * 4:
+        return "O", diags_pos[i]
 
     return "-", []
   

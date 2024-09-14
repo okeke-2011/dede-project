@@ -8,6 +8,28 @@ def check_draw(board):
         return False
   return True
 
+def get_diags(board):
+  all_diags = []
+  dir_1_s = [(3, 0), (4, 0), (3, 1), (4, 1)]
+  for i, j in dir_1_s:
+    diag = []
+    for _ in range(4):
+      diag.append(board[i][j])
+      i -= 1
+      j += 1
+    all_diags.append(diag)
+      
+  dir_2_s = [(0, 0), (0, 1), (1, 0), (1, 1)]
+  for i, j in dir_2_s:
+    diag = []
+    for _ in range(4):
+      diag.append(board[i][j])
+      i += 1
+      j += 1
+    all_diags.append(diag)
+  
+  return all_diags
+
 def check_win(board):
     n = 5
     for i in range(len(board)):
@@ -24,6 +46,12 @@ def check_win(board):
           return "X"
         elif col == ["O"] * 4:
           return "O"
+        
+    for diag in get_diags(board):
+      if diag == ["X"] * 4:
+        return "X"
+      elif diag == ["O"] * 4:
+        return "O"
 
     return "-"
 
@@ -51,7 +79,7 @@ def space_score(row, p):
   elif count_p == 3:
     score = 15
 
-  if p.lower in row:
+  if p.lower() in row:
     score *= 1.1 ** count_p_lower
 
   return score
@@ -69,7 +97,10 @@ def eval_func(board, p):
       col = [board[i+x][j] for x in range(4)]
       total_score += space_score(col, p)
 
-    return total_score / 300
+  for diag in get_diags(board):
+    total_score += space_score(diag, p)
+
+  return total_score / 300
 
 def score(board, maximizingPlayer):
   if check_win(board) == "X":
