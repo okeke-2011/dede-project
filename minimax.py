@@ -174,7 +174,7 @@ def min_value(board, alpha, beta, current_player, depth, max_depth):
           v2, _ = score(new_board, current_player), move
           # print_board(new_board)
       else:
-          v2, _ = min_value(new_board, alpha, beta, current_player, depth + 1, max_depth)
+          v2, _ = max_value(new_board, alpha, beta, current_player, depth + 1, max_depth)
 
       if v2 < v:
           v, best_move = v2, move
